@@ -103,3 +103,79 @@ class PriceMonitor:
         except Exception as e:
             self.error_count += 1
             logger.error(f"Error checking prices: {e}")
+
+    async def _check_single_token(self, token_mint: str):
+        """Check price for a single token"""
+        try:
+            params = {
+                "ids": token_mint,
+                "vsToken": self.usdc_mint
+            }
+
+            async with self.session.get(self.jupiter_url, params=params) as response:
+                if response.status != 200:
+                    logger.error(f"Jupiter API error for {token_mint}: {response.status}")
+                    return
+
+                data = await response.json()
+                price_data = data.get('data', {}).get(token_mint)
+                
+                if price_data:
+                    await self._process_price_update(token_mint, price_data)
+
+        except Exception as e:
+            logger.error(f"Error checking single token {token_mint}: {e}")
+
+    async def _process_price_update(self, token_mint: str, price_data: Dict):
+        """Process price update for a single token"""
+        try:
+            current_price = float(price_data['price'])
+            
+            # Calculate price change if we have previous price
+            if token_mint in self.last_prices:
+                last_price = self.last_prices[token_mint]
+                price_change = ((current_price - last_price) / last_price) * 100
+                
+                if abs(price_change) >= self.price_change_threshold:
+                    await self._notify_price_alert(token_mint, current_price, price_change)
+
+            # Update last price and notify
+            self.last_prices[token_mint] = current_price
+            await self._notify_price_update(token_mint, current_price, price_data)
+
+        except Exception as e:
+            logger.error(f"Error processing price update for {token_mint}: {e}")
+
+    async def _notify_price_update(self, token_mint: str, price: float, price_data: Dict):
+        """Notify all price update callbacks"""
+        for callback in self.price_update_callbacks:
+            try:
+                await callback(token_mint, price, price_data)
+            except Exception as e:
+                logger.error(f"Error in price update callback: {e}")
+
+    async def _notify_price_alert(self, token_mint: str, price: float, price_change: float):
+        """Notify all price alert callbacks"""
+        for callback in self.price_alert_callbacks:
+            try:
+                await callback(token_mint, price, price_change)
+            except Exception as e:
+                logger.error(f"Error in price alert callback: {e}")
+
+    def add_price_update_callback(self, callback: Callable):
+        """Add callback for price updates"""
+        self.price_update_callbacks.append(callback)
+
+    def add_price_alert_callback(self, callback: Callable):
+        """Add callback for price alerts"""
+        self.price_alert_callbacks.append(callback)
+
+    def get_stats(self) -> Dict:
+        """Get service statistics"""
+        return {
+            'monitored_tokens': len(self.monitored_tokens),
+            'request_count': self.request_count,
+            'error_count': self.error_count,
+            'last_request_time': self.last_request_time,
+            'is_running': self.is_running
+        }
