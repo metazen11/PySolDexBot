@@ -15,57 +15,39 @@ logger = logging.getLogger(__name__)
 class PriceMonitor:
     # Previous methods remain the same...
     
-    async def _check_prices(self):
-        """Check prices for all monitored tokens"""
-        if not self.monitored_tokens:
-            return
+    async def _notify_price_update(self, token_mint: str, price_update: PriceUpdate):
+        """Notify all registered callbacks about price updates"""
+        for callback in self.price_update_callbacks:
+            try:
+                await callback(token_mint, price_update.price, price_update.raw_data)
+            except Exception as e:
+                logger.error(f"Error in price update callback: {e}")
 
-        try:
-            # Batch tokens into groups to avoid URL length limits
-            token_batches = [list(self.monitored_tokens)[i:i + MAX_BATCH_SIZE] 
-                           for i in range(0, len(self.monitored_tokens), MAX_BATCH_SIZE)]
-            
-            for token_batch in token_batches:
-                params = {
-                    "ids": ','.join(token_batch),
-                    "vsToken": self.usdc_mint
-                }
+    async def _notify_price_alert(self, token_mint: str, price: float, price_change: float):
+        """Notify all registered callbacks about price alerts"""
+        for callback in self.price_alert_callbacks:
+            try:
+                await callback(token_mint, price, price_change)
+            except Exception as e:
+                logger.error(f"Error in price alert callback: {e}")
 
-                data = await self._make_request(self.jupiter_url, params)
-                
-                for token_mint, price_data in data.get('data', {}).items():
-                    await self._process_price_update(token_mint, price_data)
+    def add_price_update_callback(self, callback: Callable):
+        """Register a new price update callback"""
+        self.price_update_callbacks.append(callback)
 
-        except Exception as e:
-            logger.error(f"Error checking prices: {e}")
-            self.stats['error_count'] += 1
-            self.stats['last_error_time'] = datetime.now()
-            self.stats['last_error_message'] = str(e)
+    def add_price_alert_callback(self, callback: Callable):
+        """Register a new price alert callback"""
+        self.price_alert_callbacks.append(callback)
 
-    async def _process_price_update(self, token_mint: str, price_data: Dict):
-        """Process and validate price updates"""
-        try:
-            price_update = self._validate_price_data(token_mint, price_data)
-            
-            if not price_update.is_valid:
-                self.stats['invalid_data_count'] += 1
-                logger.warning(f"Invalid price data for {token_mint}: {price_update.validation_errors}")
-                return
-            
-            # Calculate price change if we have previous valid price
-            if token_mint in self.last_prices:
-                last_update = self.last_prices[token_mint]
-                price_change = ((price_update.price - last_update.price) / last_update.price) * 100
-                
-                if abs(price_change) >= self.price_change_threshold:
-                    await self._notify_price_alert(token_mint, price_update.price, price_change)
-            
-            # Update last price and notify
-            self.last_prices[token_mint] = price_update
-            await self._notify_price_update(token_mint, price_update)
+    async def add_token(self, token_mint: str):
+        """Add a token to monitor"""
+        logger.info(f"Adding token to monitor: {token_mint}")
+        self.monitored_tokens.add(token_mint)
+        if self.session:
+            await self._check_prices()
 
-        except Exception as e:
-            logger.error(f"Error processing price update for {token_mint}: {e}")
-            self.stats['error_count'] += 1
-            self.stats['last_error_time'] = datetime.now()
-            self.stats['last_error_message'] = str(e)
+    async def remove_token(self, token_mint: str):
+        """Remove a token from monitoring"""
+        logger.info(f"Removing token from monitor: {token_mint}")
+        self.monitored_tokens.discard(token_mint)
+        self.last_prices.pop(token_mint, None)
