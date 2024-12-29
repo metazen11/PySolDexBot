@@ -77,3 +77,73 @@ class PriceMonitor:
             'last_error_time': None,
             'last_error_message': None
         }
+
+    @retry(
+        stop=stop_after_attempt(3),
+        wait=wait_exponential(multiplier=1, min=4, max=10)
+    )
+    async def _make_request(self, url: str, params: Dict) -> Dict:
+        """Make HTTP request with retry logic and rate limiting"""
+        await self.rate_limiter.acquire()
+        
+        async with self.session.get(url, params=params, timeout=self.timeout) as response:
+            if response.status != 200:
+                self.stats['error_count'] += 1
+                self.stats['last_error_time'] = datetime.now()
+                self.stats['last_error_message'] = f"HTTP {response.status}"
+                raise aiohttp.ClientError(f"Jupiter API error: {response.status}")
+            
+            return await response.json()
+
+    def _validate_price_data(self, token_mint: str, price_data: Dict) -> PriceUpdate:
+        """Validate price data and return structured update"""
+        errors = []
+        current_price = float(price_data.get('price', 0))
+        
+        # Price range validation
+        if current_price < self.min_price_value:
+            errors.append(f"Price below minimum threshold: {current_price}")
+        
+        # Price deviation check if we have previous data
+        if token_mint in self.last_prices:
+            last_update = self.last_prices[token_mint]
+            price_change = abs((current_price - last_update.price) / last_update.price * 100)
+            if price_change > self.max_price_deviation:
+                errors.append(f"Price deviation too high: {price_change}%")
+        
+        return PriceUpdate(
+            token_mint=token_mint,
+            price=current_price,
+            timestamp=datetime.now(),
+            raw_data=price_data,
+            is_valid=len(errors) == 0,
+            validation_errors=errors if errors else None
+        )
+
+    async def _process_price_update(self, token_mint: str, price_data: Dict):
+        """Process and validate price updates"""
+        try:
+            price_update = self._validate_price_data(token_mint, price_data)
+            
+            if not price_update.is_valid:
+                self.stats['invalid_data_count'] += 1
+                logger.warning(f"Invalid price data for {token_mint}: {price_update.validation_errors}")
+                return
+            
+            # Calculate price change if we have previous valid price
+            if token_mint in self.last_prices:
+                last_update = self.last_prices[token_mint]
+                price_change = ((price_update.price - last_update.price) / last_update.price) * 100
+                
+                if abs(price_change) >= self.price_change_threshold:
+                    await self._notify_price_alert(token_mint, price_update.price, price_change)
+            
+            # Update last price and notify
+            self.last_prices[token_mint] = price_update
+            await self._notify_price_update(token_mint, price_update)
+
+        except Exception as e:
+            logger.error(f"Error processing price update for {token_mint}: {e}")
+            self.stats['error_count'] += 1
+            self.stats['last_error_time'] = datetime.now()
+            self.stats['last_error_message'] = str(e)
