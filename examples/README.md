@@ -1,52 +1,73 @@
 # PySolDexBot Examples
 
-This directory contains example scripts demonstrating how to use different components of the bot.
+## Momentum Scanner Example
 
-## Price Monitor Example
+The `momentum_scanner_example.py` script demonstrates how to use the momentum scanner to find trading opportunities.
 
-The `price_monitor_example.py` script shows how to:
-1. Set up and configure the price monitor
-2. Monitor multiple tokens
-3. Handle price updates and alerts
-4. Track monitoring statistics
-
-To run the example:
-
-```bash
-# Make sure you're in the project root
-python -m examples.price_monitor_example
-```
+### Features
+- Real-time token scanning
+- Safety and momentum scoring
+- Opportunity tracking and display
+- Configuration customization
 
 ### Configuration
-
-Before running, ensure your `.env` file includes the following settings:
+Before running, ensure your `.env` file includes:
 
 ```env
-# Price Monitor Settings
-PRICE_CHECK_INTERVAL=60  # seconds
-PRICE_CHANGE_THRESHOLD=1.0  # percentage
+# Scanner Settings
+MIN_LIQUIDITY_USD=50000
+MIN_VOLUME_24H=10000
+MIN_HOLDERS=200
+MAX_MARKET_CAP=10000000
+VOLUME_SPIKE_THRESHOLD=3.0
+PRICE_INCREASE_THRESHOLD=0.05
+
+# API Keys
+HELIUS_API_KEY=your_helius_key
+
+# Network Settings
+SOLANA_RPC_URL=your_rpc_url
+```
+
+### Usage
+From the project root:
+```bash
+python -m examples.momentum_scanner_example
 ```
 
 ### Example Output
-
-The script will output something like:
-
 ```
-Starting price monitoring...
+Starting momentum scanner...
 
-Price Update: RAY
-Current Price: $0.4876
-24h Volume: $1,234,567.89
----
+Active Opportunities: 3
+Blacklisted Tokens: 12
 
-Price Alert: BONK
-Direction: 🔴 Down 1.50%
-Current Price: $0.00001234
-
-Monitor Stats:
-Monitored Tokens: 3
-Requests Made: 42
-Errors: 0
-Last Request: 2024-12-27 12:34:56
-Status: Running
+Top Opportunities:
+==================================================
+Token: XYZ
+Price: $0.000123
+Market Cap: $5,000,000
+24h Volume: $250,000
+Liquidity: $75,000
+Safety Score: 85.5/100
+Momentum Score: 92.3/100
+Found: 2024-12-29 14:30:45
+==================================================
 ```
+
+### Understanding Scores
+
+#### Safety Score
+Factors considered:
+- Contract verification
+- Liquidity locks
+- Holder distribution
+- Trading patterns
+- Contract safety checks
+
+#### Momentum Score
+Factors considered:
+- Price momentum
+- Volume spikes
+- Technical indicators
+- Market patterns
