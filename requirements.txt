@@ -11,19 +11,19 @@ requests>=2.31.0
 
 # Solana/DeFi
 solana>=0.30.0
-anchor-client>=0.2.0
-jupiter-python-sdk>=0.1.0
-helius-sdk>=0.1.0
+anchorpy>=0.17.0  # The correct package name is anchorpy for Python
+anchor>=0.4.0
+jupiter-python-sdk>=0.0.2.0  # Official Jupiter Aggregator Python SDK
+helius-sdk  # Latest version with anchor-client compatibility
 
 # Data Processing
 pandas>=1.3.0
 numpy>=1.21.0
-ta-lib>=0.4.0  # Technical analysis
+ta-lib # Technical analysis - windows ; pip install "C:\Users\mauri\Downloads\ta_lib-0.5.1-cp313-cp313-win_amd64.whl"
 pandas-ta>=0.3.0b0  # Additional TA indicators
 
 # Utilities
-python-dotenv>=0.19.0
-python-logging>=0.4.9.6
+python-dotenv
 asyncio>=3.4.3
 websockets>=10.0
 tenacity>=8.2.2  # For retries
@@ -31,7 +31,7 @@ aiocache>=0.12.1  # For API response caching
 
 # Type Checking
 mypy>=1.5.1
-types-all>=1.0.0
+# types-all>=0.1.1 # causing issues
 
 # Testing
 pytest>=7.4.0
