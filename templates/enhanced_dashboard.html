@@ -1,0 +1,504 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Enhanced Solana Token Security Scanner</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: #333;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1600px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            color: white;
+        }
+
+        .header h1 {
+            font-size: 2.8em;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .stat-card {
+            background: white;
+            padding: 20px;
+            border-radius: 15px;
+            text-align: center;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+            transition: transform 0.3s ease;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .stat-value {
+            font-size: 2em;
+            font-weight: bold;
+            color: #667eea;
+            margin-bottom: 8px;
+        }
+
+        .stat-label {
+            color: #666;
+            font-size: 0.9em;
+        }
+
+        .tokens-section {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 25px;
+            margin-bottom: 30px;
+        }
+
+        .token-panel {
+            background: white;
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+        }
+
+        .panel-header {
+            font-size: 1.3em;
+            font-weight: bold;
+            margin-bottom: 15px;
+            color: #333;
+            border-bottom: 3px solid #667eea;
+            padding-bottom: 8px;
+        }
+
+        .token-item {
+            background: #f8f9fa;
+            margin-bottom: 12px;
+            padding: 12px;
+            border-radius: 8px;
+            border-left: 4px solid #667eea;
+            transition: all 0.3s ease;
+        }
+
+        .token-item:hover {
+            background: #e9ecef;
+            transform: translateX(3px);
+        }
+
+        .token-item.safe {
+            border-left-color: #28a745;
+        }
+
+        .token-item.risky {
+            border-left-color: #dc3545;
+        }
+
+        .token-item.medium-risk {
+            border-left-color: #ffc107;
+        }
+
+        .token-name {
+            font-weight: bold;
+            font-size: 1em;
+            margin-bottom: 6px;
+            color: #333;
+        }
+
+        .token-details {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+            font-size: 0.85em;
+            color: #666;
+            margin-bottom: 8px;
+        }
+
+        .token-security {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            margin-bottom: 8px;
+        }
+
+        .security-badge {
+            padding: 2px 6px;
+            border-radius: 10px;
+            font-size: 0.7em;
+            font-weight: bold;
+        }
+
+        .security-badge.safe {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .security-badge.risky {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        .security-badge.neutral {
+            background: #e2e3e5;
+            color: #495057;
+        }
+
+        .token-links {
+            display: flex;
+            gap: 8px;
+        }
+
+        .token-links a {
+            background: #667eea;
+            color: white;
+            padding: 4px 10px;
+            border-radius: 15px;
+            text-decoration: none;
+            font-size: 0.75em;
+            transition: background 0.3s ease;
+        }
+
+        .token-links a:hover {
+            background: #5a6fd8;
+        }
+
+        .safety-score {
+            display: inline-block;
+            padding: 3px 8px;
+            border-radius: 12px;
+            font-size: 0.8em;
+            font-weight: bold;
+            color: white;
+        }
+
+        .score-high { background: #28a745; }
+        .score-medium { background: #ffc107; color: #000; }
+        .score-low { background: #dc3545; }
+
+        .refresh-btn {
+            background: #28a745;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 1em;
+            margin: 20px auto;
+            display: block;
+            transition: background 0.3s ease;
+        }
+
+        .refresh-btn:hover {
+            background: #218838;
+        }
+
+        .last-updated {
+            text-align: center;
+            color: white;
+            margin-top: 20px;
+            font-style: italic;
+        }
+
+        .status-indicator {
+            font-size: 0.9em;
+            font-weight: bold;
+        }
+
+        .status-good { color: #28a745; }
+        .status-bad { color: #dc3545; }
+        .status-warning { color: #ffc107; }
+
+        @media (max-width: 1200px) {
+            .tokens-section {
+                grid-template-columns: 1fr 1fr;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .tokens-section {
+                grid-template-columns: 1fr;
+            }
+            .token-details {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🛡️ Enhanced Token Security Scanner</h1>
+            <p>Real-time monitoring with advanced security analysis</p>
+        </div>
+
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-value" id="total-pools">-</div>
+                <div class="stat-label">Total Pools</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="recent-pools">-</div>
+                <div class="stat-label">New Pools (24h)</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="safe-tokens">-</div>
+                <div class="stat-label">Safe Tokens (24h)</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="high-value">-</div>
+                <div class="stat-label">High-Value Tokens</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="avg-safety">-</div>
+                <div class="stat-label">Avg Safety Score</div>
+            </div>
+        </div>
+
+        <div class="tokens-section">
+            <div class="token-panel">
+                <div class="panel-header">🔥 Hot Tokens (Active Trading)</div>
+                <div id="hot-tokens">Loading...</div>
+            </div>
+
+            <div class="token-panel">
+                <div class="panel-header">🏆 Premium Tokens (Score 8-10)</div>
+                <div id="premium-tokens">Loading...</div>
+            </div>
+
+            <div class="token-panel">
+                <div class="panel-header">✅ Safe Tokens (Score 6-7)</div>
+                <div id="safe-tokens-list">Loading...</div>
+            </div>
+        </div>
+
+        <button class="refresh-btn" onclick="refreshData()">🔄 Refresh Data</button>
+
+        <div class="last-updated">
+            Last updated: <span id="last-updated">-</span>
+        </div>
+    </div>
+
+    <script>
+        function getScoreClass(score) {
+            if (score >= 8) return 'score-high';
+            if (score >= 6) return 'score-medium';
+            return 'score-low';
+        }
+
+        function getRiskClass(riskLevel) {
+            switch(riskLevel) {
+                case 'low': return 'safe';
+                case 'medium': return 'medium-risk';
+                case 'high': return 'risky';
+                default: return '';
+            }
+        }
+
+        async function fetchStats() {
+            try {
+                const response = await fetch('/api/stats');
+                const stats = await response.json();
+
+                document.getElementById('total-pools').textContent = stats.total_pools.toLocaleString();
+                document.getElementById('recent-pools').textContent = stats.recent_pools_24h.toLocaleString();
+                document.getElementById('safe-tokens').textContent = stats.safe_tokens_24h.toLocaleString();
+                document.getElementById('high-value').textContent = stats.high_value_tokens.toLocaleString();
+                document.getElementById('avg-safety').textContent = stats.avg_safety_score;
+                document.getElementById('last-updated').textContent = new Date(stats.last_updated).toLocaleString();
+            } catch (error) {
+                console.error('Failed to fetch stats:', error);
+            }
+        }
+
+        async function fetchPremiumTokens() {
+            try {
+                const response = await fetch('/api/premium-tokens');
+                const tokens = await response.json();
+
+                const container = document.getElementById('premium-tokens');
+                if (tokens.length === 0) {
+                    container.innerHTML = '<p>No premium tokens found</p>';
+                    return;
+                }
+
+                container.innerHTML = tokens.map(token => `
+                    <div class="token-item safe">
+                        <div class="token-name">${token.name || 'Unknown Token'}
+                            <span class="safety-score ${getScoreClass(token.safety_score)}">Score: ${token.safety_score}/10</span>
+                        </div>
+                        <div class="token-details">
+                            <div>Liquidity: $${token.liquidity?.toLocaleString() || 'N/A'}</div>
+                            <div>Volume 24h: $${token.volume24h?.toLocaleString() || 'N/A'}</div>
+                            <div>Holders: ${token.holder_count || 'N/A'}</div>
+                            <div>Discovered: ${token.discovered_at ? new Date(token.discovered_at).toLocaleTimeString() : 'N/A'}</div>
+                        </div>
+                        <div class="token-security">
+                            <span class="security-badge ${token.is_pump_token ? 'safe' : 'neutral'}">
+                                ${token.is_pump_token ? '🟢 Pump.fun (Safer)' : '🟡 Unvetted Token'}
+                            </span>
+                            <span class="security-badge ${token.mint_authority_renounced ? 'safe' : 'risky'}">
+                                ${token.mint_authority_renounced ? '🟢 Mint Renounced' : '🔴 Mint Authority'}
+                            </span>
+                            <span class="security-badge ${token.freeze_authority_renounced ? 'safe' : 'risky'}">
+                                ${token.freeze_authority_renounced ? '🟢 Freeze Renounced' : '🔴 Freeze Authority'}
+                            </span>
+                        </div>
+                        <div class="token-links">
+                            <a href="${token.solscan_url}" target="_blank">Solscan</a>
+                            <a href="${token.dexscreener_url}" target="_blank">DexScreener</a>
+                            <a href="${token.raydium_url}" target="_blank">Trade</a>
+                        </div>
+                    </div>
+                `).join('');
+            } catch (error) {
+                console.error('Failed to fetch premium tokens:', error);
+                document.getElementById('premium-tokens').innerHTML = '<p>Error loading premium tokens</p>';
+            }
+        }
+
+        async function fetchSafeTokens() {
+            try {
+                const response = await fetch('/api/safe-tokens');
+                const tokens = await response.json();
+
+                const container = document.getElementById('safe-tokens-list');
+                if (tokens.length === 0) {
+                    container.innerHTML = '<p>No safe tokens found</p>';
+                    return;
+                }
+
+                container.innerHTML = tokens.slice(0, 10).map(token => `
+                    <div class="token-item safe">
+                        <div class="token-name">${token.name || 'Unknown Token'}
+                            <span class="safety-score ${getScoreClass(token.safety_score)}">Score: ${token.safety_score}/10</span>
+                        </div>
+                        <div class="token-details">
+                            <div>Liquidity: $${token.liquidity?.toLocaleString() || 'N/A'}</div>
+                            <div>Volume 24h: $${token.volume24h?.toLocaleString() || 'N/A'}</div>
+                            <div>Holders: ${token.holder_count || 'N/A'}</div>
+                            <div>Top Holder: ${token.holder_concentration || 'N/A'}</div>
+                        </div>
+                        <div class="token-links">
+                            <a href="${token.solscan_url}" target="_blank">Solscan</a>
+                            <a href="${token.dexscreener_url}" target="_blank">DexScreener</a>
+                        </div>
+                    </div>
+                `).join('');
+            } catch (error) {
+                console.error('Failed to fetch safe tokens:', error);
+                document.getElementById('safe-tokens-list').innerHTML = '<p>Error loading safe tokens</p>';
+            }
+        }
+
+        async function fetchRecentTokens() {
+            try {
+                const response = await fetch('/api/recent-tokens');
+                const tokens = await response.json();
+
+                const container = document.getElementById('recent-tokens');
+                if (tokens.length === 0) {
+                    container.innerHTML = '<p>No recent tokens found</p>';
+                    return;
+                }
+
+                container.innerHTML = tokens.slice(0, 10).map(token => `
+                    <div class="token-item ${getRiskClass(token.risk_level)}">
+                        <div class="token-name">${token.name || 'Unknown Token'}
+                            ${token.safety_score ? `<span class="safety-score ${getScoreClass(token.safety_score)}">Score: ${token.safety_score}/10</span>` : ''}
+                        </div>
+                        <div class="token-details">
+                            <div>Liquidity: $${token.liquidity?.toLocaleString() || 'N/A'}</div>
+                            <div>Volume 24h: $${token.volume24h?.toLocaleString() || 'N/A'}</div>
+                            <div>Risk Level: <span class="status-indicator ${token.risk_level === 'low' ? 'status-good' : token.risk_level === 'high' ? 'status-bad' : 'status-warning'}">${token.risk_level.toUpperCase()}</span></div>
+                            <div>Discovered: ${token.discovered_at ? new Date(token.discovered_at).toLocaleTimeString() : 'N/A'}</div>
+                        </div>
+                        <div class="token-security">
+                            <span class="security-badge ${token.is_pump_token ? 'safe' : 'neutral'}">
+                                ${token.is_pump_token ? '🟢 Pump.fun (Safer)' : '🟡 Unvetted Token'}
+                            </span>
+                        </div>
+                        <div class="token-links">
+                            <a href="${token.solscan_url}" target="_blank">Solscan</a>
+                            <a href="${token.dexscreener_url}" target="_blank">DexScreener</a>
+                        </div>
+                    </div>
+                `).join('');
+            } catch (error) {
+                console.error('Failed to fetch recent tokens:', error);
+                document.getElementById('recent-tokens').innerHTML = '<p>Error loading tokens</p>';
+            }
+        }
+
+        async function fetchHotTokens() {
+            try {
+                const response = await fetch('/api/hot-tokens');
+                const tokens = await response.json();
+
+                const container = document.getElementById('hot-tokens');
+                if (tokens.length === 0) {
+                    container.innerHTML = '<p>No hot tokens found - check back in a few minutes!</p>';
+                    return;
+                }
+
+                container.innerHTML = tokens.map(token => `
+                    <div class="token-item safe">
+                        <div class="token-name">${token.name || 'Unknown Token'}
+                            <span class="safety-score score-high">${token.momentum_emoji} ${token.momentum_indicator.toUpperCase()}</span>
+                        </div>
+                        <div class="token-details">
+                            <div>Volume 1h: $${token.volume_last_hour?.toLocaleString() || 'N/A'}</div>
+                            <div>Trades 1h: ${token.trades_last_hour || 'N/A'}</div>
+                            <div>Activity Score: ${token.activity_score}/10</div>
+                            <div>Safety Score: ${token.safety_score}/10</div>
+                        </div>
+                        <div class="token-security">
+                            <span class="security-badge ${token.is_pump_token ? 'safe' : 'neutral'}">
+                                ${token.is_pump_token ? '🟢 Pump.fun (Safer)' : '🟡 Unvetted Token'}
+                            </span>
+                        </div>
+                        <div class="token-links">
+                            <a href="${token.solscan_url}" target="_blank">Solscan</a>
+                            <a href="${token.dexscreener_url}" target="_blank">DexScreener</a>
+                        </div>
+                    </div>
+                `).join('');
+            } catch (error) {
+                console.error('Failed to fetch hot tokens:', error);
+                document.getElementById('hot-tokens').innerHTML = '<p>Error loading hot tokens</p>';
+            }
+        }
+
+        function refreshData() {
+            fetchStats();
+            fetchHotTokens();
+            fetchPremiumTokens();
+            fetchSafeTokens();
+        }
+
+        // Initial load
+        refreshData();
+
+        // Auto-refresh every 30 seconds
+        setInterval(refreshData, 30000);
+    </script>
+</body>
+</html>

@@ -1,0 +1,1171 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Advanced Token Filter - Competitive Edge</title>
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+    <meta name="version" content="1.2.<?php echo time(); ?>">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            color: #333;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 20px;
+            color: white;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 5px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .header p {
+            font-size: 1.1em;
+            opacity: 0.9;
+        }
+
+        .main-layout {
+            display: grid;
+            grid-template-columns: 280px 1fr;
+            gap: 15px;
+            min-height: 80vh;
+        }
+
+        /* FILTER PANEL */
+        .filter-panel {
+            background: white;
+            border-radius: 10px;
+            padding: 15px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            height: fit-content;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        .filter-section {
+            margin-bottom: 15px;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 12px;
+        }
+
+        .filter-section:last-child {
+            border-bottom: none;
+        }
+
+        .filter-title {
+            font-size: 1em;
+            font-weight: bold;
+            color: #2a5298;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .filter-group {
+            margin-bottom: 10px;
+        }
+
+        .filter-label {
+            display: block;
+            font-weight: 600;
+            color: #555;
+            margin-bottom: 8px;
+            font-size: 0.9em;
+        }
+
+        .filter-input {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-size: 0.85em;
+            transition: border-color 0.3s ease;
+        }
+
+        .filter-input:focus {
+            outline: none;
+            border-color: #2a5298;
+        }
+
+        .range-input {
+            width: 100%;
+            margin: 5px 0;
+        }
+
+        .range-display {
+            font-size: 0.8em;
+            color: #666;
+            text-align: center;
+        }
+
+        .checkbox-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .checkbox-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .checkbox-item input[type="checkbox"] {
+            transform: scale(1.2);
+        }
+
+        .preset-buttons {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 8px;
+            margin-bottom: 20px;
+        }
+
+        .preset-btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 8px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.8em;
+            font-weight: 600;
+            transition: transform 0.2s ease;
+            text-align: left;
+        }
+
+        .preset-btn:hover {
+            transform: translateY(-2px);
+        }
+
+        .preset-desc {
+            font-size: 0.7em;
+            opacity: 0.9;
+            margin-top: 2px;
+        }
+
+        .apply-btn {
+            width: 100%;
+            background: #28a745;
+            color: white;
+            border: none;
+            padding: 15px;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 1.1em;
+            font-weight: bold;
+            margin-top: 20px;
+            transition: background 0.3s ease;
+        }
+
+        .apply-btn:hover {
+            background: #218838;
+        }
+
+        .reset-btn {
+            width: 100%;
+            background: #6c757d;
+            color: white;
+            border: none;
+            padding: 10px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 0.9em;
+            margin-top: 10px;
+        }
+
+        /* RESULTS PANEL */
+        .results-panel {
+            background: white;
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+        }
+
+        .results-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #eee;
+        }
+
+        .results-count {
+            font-size: 1.3em;
+            font-weight: bold;
+            color: #2a5298;
+        }
+
+        .sort-controls {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .sort-select {
+            padding: 8px 12px;
+            border: 2px solid #ddd;
+            border-radius: 6px;
+            font-size: 0.9em;
+        }
+
+        .results-list {
+            max-height: 70vh;
+            overflow-y: auto;
+        }
+
+        .table-controls {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+
+        .table-search {
+            flex: 1;
+            min-width: 200px;
+            padding: 8px 12px;
+            border: 2px solid #ddd;
+            border-radius: 6px;
+            font-size: 0.9em;
+        }
+
+        .table-search:focus {
+            outline: none;
+            border-color: #2a5298;
+        }
+
+        .table-info {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+            font-size: 0.9em;
+            color: #666;
+        }
+
+        .pagination {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 10px;
+            margin-top: 15px;
+            padding: 15px;
+            border-top: 1px solid #eee;
+        }
+
+        .pagination button {
+            padding: 8px 12px;
+            border: 1px solid #ddd;
+            background: white;
+            cursor: pointer;
+            border-radius: 4px;
+            transition: all 0.3s ease;
+        }
+
+        .pagination button:hover {
+            background: #f8f9fa;
+        }
+
+        .pagination button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .pagination .current-page {
+            background: #2a5298;
+            color: white;
+            border-color: #2a5298;
+        }
+
+        .performance-badge {
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-size: 0.7em;
+            font-weight: bold;
+        }
+
+        .performance-excellent {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .performance-good {
+            background: #d1ecf1;
+            color: #0c5460;
+        }
+
+        .performance-average {
+            background: #fff3cd;
+            color: #856404;
+        }
+
+        .performance-poor {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        .risk-cell {
+            text-align: center;
+        }
+
+        .risk-badge {
+            padding: 3px 8px;
+            border-radius: 4px;
+            font-size: 0.75em;
+            font-weight: bold;
+            display: inline-block;
+        }
+
+        .risk-low {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .risk-medium {
+            background: #fff3cd;
+            color: #856404;
+        }
+
+        .risk-high {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        .risk-very-high {
+            background: #dc3545;
+            color: white;
+        }
+
+        .token-table {
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .token-table th {
+            background: #2a5298;
+            color: white;
+            padding: 12px 8px;
+            text-align: left;
+            font-weight: 600;
+            font-size: 0.9em;
+            border-bottom: 1px solid #1e3c72;
+            cursor: pointer;
+            user-select: none;
+            transition: background-color 0.3s ease;
+            position: relative;
+        }
+
+        .token-table th:hover {
+            background: #1e3c72;
+        }
+
+        .token-table th.sortable::after {
+            content: '⇅';
+            position: absolute;
+            right: 8px;
+            opacity: 0.5;
+        }
+
+        .token-table th.sort-asc::after {
+            content: '↑';
+            opacity: 1;
+        }
+
+        .token-table th.sort-desc::after {
+            content: '↓';
+            opacity: 1;
+        }
+
+        .token-table td {
+            padding: 10px 8px;
+            border-bottom: 1px solid #eee;
+            font-size: 0.9em;
+        }
+
+        .token-table tr:hover {
+            background: #f8f9fa;
+        }
+
+        .token-table tr:last-child td {
+            border-bottom: none;
+        }
+
+        .token-name-cell {
+            font-weight: 600;
+            color: #333;
+            max-width: 180px;
+        }
+
+        .token-name-cell .token-address {
+            font-size: 0.75em;
+            color: #666;
+            font-family: monospace;
+        }
+
+        .number-cell {
+            text-align: right;
+            font-weight: 500;
+        }
+
+        .platform-cell {
+            text-align: center;
+        }
+
+        .pump-badge {
+            background: #28a745;
+            color: white;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 0.7em;
+            font-weight: bold;
+        }
+
+        .regular-badge {
+            background: #6c757d;
+            color: white;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 0.7em;
+            font-weight: bold;
+        }
+
+        .links-cell {
+            text-align: center;
+        }
+
+        .links-cell a {
+            background: #2a5298;
+            color: white;
+            padding: 4px 8px;
+            border-radius: 4px;
+            text-decoration: none;
+            font-size: 0.7em;
+            margin: 0 2px;
+            transition: background 0.3s ease;
+        }
+
+        .links-cell a:hover {
+            background: #1e3c72;
+        }
+
+        .score-cell {
+            text-align: center;
+        }
+
+        .composite-score {
+            font-weight: bold;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 0.8em;
+        }
+
+        .composite-score.positive {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .composite-score.negative {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        .composite-score.neutral {
+            background: #fff3cd;
+            color: #856404;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #666;
+            font-size: 1.1em;
+        }
+
+        .no-results {
+            text-align: center;
+            padding: 40px;
+            color: #999;
+        }
+
+        .filter-toggle {
+            display: none;
+            background: #2a5298;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 6px;
+            cursor: pointer;
+            margin-bottom: 15px;
+            font-size: 0.9em;
+        }
+
+        @media (max-width: 1024px) {
+            .main-layout {
+                grid-template-columns: 1fr;
+            }
+
+            .filter-toggle {
+                display: block;
+            }
+
+            .filter-panel {
+                display: none;
+                max-height: none;
+                margin-bottom: 15px;
+            }
+
+            .filter-panel.show {
+                display: block;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 10px;
+            }
+
+            .header h1 {
+                font-size: 1.8em;
+            }
+
+            .table-controls {
+                flex-direction: column;
+                gap: 10px;
+            }
+
+            .table-info {
+                font-size: 0.8em;
+            }
+
+            .token-table {
+                font-size: 0.8em;
+            }
+
+            .token-table th,
+            .token-table td {
+                padding: 6px 4px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🚀 Advanced Token Filter</h1>
+            <p>Superior filtering with competitive advantages over DexTools & DexScreener</p>
+        </div>
+
+        <div class="main-layout">
+            <!-- FILTER TOGGLE (Mobile) -->
+            <button class="filter-toggle" onclick="toggleFilters()">🔍 Show Filters</button>
+
+            <!-- FILTER PANEL -->
+            <div class="filter-panel" id="filter-panel">
+                <!-- PRESETS -->
+                <div class="filter-section">
+                    <div class="filter-title">⚡ Quick Presets</div>
+                    <div class="preset-buttons" id="preset-buttons">
+                        <div class="loading">Loading presets...</div>
+                    </div>
+                </div>
+
+                <!-- TIME RANGE -->
+                <div class="filter-section">
+                    <div class="filter-title">⏰ Time Range</div>
+                    <div class="filter-group">
+                        <select class="filter-input" id="time-range">
+                            <option value="">All Time</option>
+                            <option value="1h">Last Hour</option>
+                            <option value="6h">Last 6 Hours</option>
+                            <option value="24h">Last 24 Hours</option>
+                            <option value="7d">Last 7 Days</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- LIQUIDITY -->
+                <div class="filter-section">
+                    <div class="filter-title">💧 Liquidity</div>
+                    <div class="filter-group">
+                        <label class="filter-label">Minimum Liquidity ($)</label>
+                        <input type="number" class="filter-input" id="min-liquidity" placeholder="e.g. 10000">
+                    </div>
+                    <div class="filter-group">
+                        <label class="filter-label">Maximum Liquidity ($)</label>
+                        <input type="number" class="filter-input" id="max-liquidity" placeholder="e.g. 1000000">
+                    </div>
+                </div>
+
+                <!-- ACTIVITY -->
+                <div class="filter-section">
+                    <div class="filter-title">🔥 Activity Level</div>
+                    <div class="filter-group">
+                        <select class="filter-input" id="activity-level">
+                            <option value="">Any Activity</option>
+                            <option value="hot">🔥 HOT (8-10)</option>
+                            <option value="active">⚡ ACTIVE (5-7)</option>
+                            <option value="moderate">📈 MODERATE (2-4)</option>
+                        </select>
+                    </div>
+                    <div class="filter-group">
+                        <label class="filter-label">Min Volume 1H ($)</label>
+                        <input type="number" class="filter-input" id="min-volume-1h" placeholder="e.g. 1000">
+                    </div>
+                </div>
+
+                <!-- SAFETY -->
+                <div class="filter-section">
+                    <div class="filter-title">🛡️ Safety Level</div>
+                    <div class="filter-group">
+                        <select class="filter-input" id="safety-level">
+                            <option value="">Any Safety</option>
+                            <option value="premium">🏆 PREMIUM (8-10)</option>
+                            <option value="safe">✅ SAFE (6-7)</option>
+                            <option value="moderate">⚠️ MODERATE (4-5)</option>
+                        </select>
+                    </div>
+                    <div class="checkbox-group">
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="mint-renounced">
+                            <label for="mint-renounced">Mint Authority Renounced</label>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="freeze-renounced">
+                            <label for="freeze-renounced">Freeze Authority Renounced</label>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- PLATFORM -->
+                <div class="filter-section">
+                    <div class="filter-title">🏗️ Platform</div>
+                    <div class="filter-group">
+                        <select class="filter-input" id="platform">
+                            <option value="">All Platforms</option>
+                            <option value="pump_only">🟢 Pump.fun Only</option>
+                            <option value="no_pump">🟡 No Pump.fun</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- ADVANCED -->
+                <div class="filter-section">
+                    <div class="filter-title">🎯 Advanced</div>
+                    <div class="filter-group">
+                        <label class="filter-label">Max Holder Concentration (%)</label>
+                        <input type="number" class="filter-input" id="max-holder-concentration" placeholder="e.g. 30" max="100">
+                    </div>
+                    <div class="filter-group">
+                        <select class="filter-input" id="price-trend">
+                            <option value="">Any Price Trend</option>
+                            <option value="pumping">📈 Pumping (+10%)</option>
+                            <option value="stable">📊 Stable (±5%)</option>
+                            <option value="dipping">📉 Dipping (-10%)</option>
+                        </select>
+                    </div>
+                    <div class="checkbox-group">
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="recent-trades-only">
+                            <label for="recent-trades-only">Recent Trades Only (30m)</label>
+                        </div>
+                    </div>
+                </div>
+
+                <button class="apply-btn" onclick="applyFilters()">🔍 Apply Filters</button>
+                <button class="reset-btn" onclick="resetFilters()">🔄 Reset All</button>
+            </div>
+
+            <!-- RESULTS PANEL -->
+            <div class="results-panel">
+                <div class="results-header">
+                    <div class="results-count" id="results-count">Ready to filter</div>
+                    <div class="sort-controls">
+                        <label>Sort by:</label>
+                        <select class="sort-select" id="sort-by" onchange="applyFilters()">
+                            <option value="newest">⏰ Newest</option>
+                            <option value="marketcap">💰 Market Cap</option>
+                            <option value="liquidity">💧 Liquidity</option>
+                            <option value="volume">📊 Volume 24h</option>
+                            <option value="activity">🔥 Activity</option>
+                            <option value="safety">🛡️ Safety</option>
+                            <option value="momentum">⚡ Momentum</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="table-controls">
+                    <input type="text" class="table-search" id="table-search" placeholder="🔍 Search tokens by name or address..." onkeyup="filterTable()">
+                    <div class="table-info">
+                        <span id="visible-count">0</span> visible |
+                        <span id="total-count">0</span> total |
+                        <span id="avg-market-cap">$0</span> avg market cap
+                    </div>
+                </div>
+
+                <div class="results-list" id="results-list">
+                    <div class="loading">Loading secure tokens (volume > $100, risk ≤ 6/10)...</div>
+                </div>
+
+                <div class="pagination" id="pagination" style="display: none;">
+                    <button onclick="changePage(-1)" id="prev-btn">← Previous</button>
+                    <span id="page-info">Page 1 of 1</span>
+                    <button onclick="changePage(1)" id="next-btn">Next →</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentFilters = {};
+        let currentData = [];
+        let filteredData = [];
+        let currentPage = 1;
+        let itemsPerPage = 50;
+        let currentSort = { column: -1, direction: 'asc' };
+
+        // Load presets and recent tokens on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            loadPresets();
+            loadRecentTokens();
+        });
+
+        async function loadPresets() {
+            try {
+                const response = await fetch('/api/presets');
+                const presets = await response.json();
+
+                const container = document.getElementById('preset-buttons');
+                container.innerHTML = Object.entries(presets).map(([key, preset]) => `
+                    <button class="preset-btn" onclick="applyPreset('${key}')">
+                        ${preset.name}
+                        <div class="preset-desc">${preset.description}</div>
+                    </button>
+                `).join('');
+            } catch (error) {
+                console.error('Failed to load presets:', error);
+            }
+        }
+
+        function applyPreset(presetKey) {
+            fetch('/api/presets')
+                .then(response => response.json())
+                .then(presets => {
+                    const preset = presets[presetKey];
+                    if (preset) {
+                        // Apply preset filters to UI
+                        Object.entries(preset.filters).forEach(([key, value]) => {
+                            const elementId = key.replace(/_/g, '-');
+                            const element = document.getElementById(elementId);
+                            if (element) {
+                                if (element.type === 'checkbox') {
+                                    element.checked = value;
+                                } else {
+                                    element.value = value;
+                                }
+                            }
+                        });
+
+                        // Apply filters
+                        applyFilters();
+                    }
+                });
+        }
+
+        function collectFilters() {
+            const filters = {};
+
+            // Collect all filter values
+            const timeRange = document.getElementById('time-range').value;
+            if (timeRange) filters.time_range = timeRange;
+
+            const minLiquidity = document.getElementById('min-liquidity').value;
+            if (minLiquidity) filters.min_liquidity = parseFloat(minLiquidity);
+
+            const maxLiquidity = document.getElementById('max-liquidity').value;
+            if (maxLiquidity) filters.max_liquidity = parseFloat(maxLiquidity);
+
+            const minVolume1h = document.getElementById('min-volume-1h').value;
+            if (minVolume1h) filters.min_volume_1h = parseFloat(minVolume1h);
+
+            const activityLevel = document.getElementById('activity-level').value;
+            if (activityLevel) filters.activity_level = activityLevel;
+
+            const safetyLevel = document.getElementById('safety-level').value;
+            if (safetyLevel) filters.safety_level = safetyLevel;
+
+            const platform = document.getElementById('platform').value;
+            if (platform) filters.platform = platform;
+
+            const maxHolderConcentration = document.getElementById('max-holder-concentration').value;
+            if (maxHolderConcentration) filters.max_holder_concentration = parseFloat(maxHolderConcentration);
+
+            const priceTrend = document.getElementById('price-trend').value;
+            if (priceTrend) filters.price_trend = priceTrend;
+
+            // Checkboxes
+            if (document.getElementById('mint-renounced').checked) filters.mint_renounced = true;
+            if (document.getElementById('freeze-renounced').checked) filters.freeze_renounced = true;
+            if (document.getElementById('recent-trades-only').checked) filters.recent_trades_only = true;
+
+            // Sorting
+            filters.sort_by = document.getElementById('sort-by').value;
+            filters.limit = 100;
+
+            return filters;
+        }
+
+        async function applyFilters() {
+            const filters = collectFilters();
+            currentFilters = filters;
+
+            const resultsList = document.getElementById('results-list');
+            const resultsCount = document.getElementById('results-count');
+
+            resultsList.innerHTML = '<div class="loading">🔍 Searching tokens...</div>';
+            resultsCount.textContent = 'Searching...';
+
+            try {
+                const response = await fetch('/api/filter', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(filters)
+                });
+
+                const data = await response.json();
+                displayResults(data);
+
+            } catch (error) {
+                console.error('Filter error:', error);
+                resultsList.innerHTML = '<div class="no-results">❌ Error applying filters. Please try again.</div>';
+                resultsCount.textContent = 'Error';
+            }
+        }
+
+        function displayResults(data) {
+            console.log('Displaying results:', data);
+            currentData = data.tokens;
+            filteredData = [...currentData];
+            currentPage = 1;
+
+            console.log('About to update table with', filteredData.length, 'tokens');
+            updateTable();
+            updateTableInfo();
+        }
+
+        function updateTable() {
+            console.log('updateTable called with', filteredData.length, 'tokens');
+            const resultsList = document.getElementById('results-list');
+            const resultsCount = document.getElementById('results-count');
+
+            resultsCount.textContent = `Found ${filteredData.length} tokens`;
+
+            if (filteredData.length === 0) {
+                console.log('No tokens to display');
+                resultsList.innerHTML = '<div class="no-results">No tokens match your criteria. Try adjusting your filters.</div>';
+                document.getElementById('pagination').style.display = 'none';
+                return;
+            }
+
+            // Pagination
+            const startIndex = (currentPage - 1) * itemsPerPage;
+            const endIndex = startIndex + itemsPerPage;
+            const pageData = filteredData.slice(startIndex, endIndex);
+
+            const tableHTML = `
+                <table class="token-table">
+                    <thead>
+                        <tr>
+                            <th onclick="sortTable(0)" class="sortable ${currentSort.column === 0 ? 'sort-' + currentSort.direction : ''}">Token</th>
+                            <th onclick="sortTable(1)" class="sortable ${currentSort.column === 1 ? 'sort-' + currentSort.direction : ''}">Market Cap</th>
+                            <th onclick="sortTable(2)" class="sortable ${currentSort.column === 2 ? 'sort-' + currentSort.direction : ''}">Liquidity</th>
+                            <th onclick="sortTable(3)" class="sortable ${currentSort.column === 3 ? 'sort-' + currentSort.direction : ''}">Volume 24h</th>
+                            <th onclick="sortTable(4)" class="sortable ${currentSort.column === 4 ? 'sort-' + currentSort.direction : ''}">Risk</th>
+                            <th onclick="sortTable(5)" class="sortable ${currentSort.column === 5 ? 'sort-' + currentSort.direction : ''}">Platform</th>
+                            <th onclick="sortTable(6)" class="sortable ${currentSort.column === 6 ? 'sort-' + currentSort.direction : ''}">Score</th>
+                            <th>Links</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${pageData.map(token => {
+                            const scoreClass = token.composite_score > 0 ? 'positive' :
+                                             token.composite_score < 0 ? 'negative' : 'neutral';
+
+                            return `
+                                <tr>
+                                    <td class="token-name-cell">
+                                        <div>${token.name || 'Unknown Token'}</div>
+                                        <div class="token-address">${token.token_address?.substring(0, 8)}...${token.token_address?.substring(-8)}</div>
+                                    </td>
+                                    <td class="number-cell" data-value="${token.market_cap || 0}">$${token.market_cap?.toLocaleString() || 'N/A'}</td>
+                                    <td class="number-cell" data-value="${token.liquidity || 0}">$${token.liquidity?.toLocaleString() || 'N/A'}</td>
+                                    <td class="number-cell" data-value="${token.volume24h || 0}">$${token.volume24h?.toLocaleString() || 'N/A'}</td>
+                                    <td class="risk-cell" data-value="${token.risk_score || 0}">
+                                        <span class="risk-badge ${getRiskClass(token.risk_score)}">
+                                            ${getRiskLabel(token.risk_score)} (${token.risk_score}/10)
+                                        </span>
+                                    </td>
+                                    <td class="platform-cell">
+                                        ${token.is_pump_token ?
+                                            '<span class="pump-badge">Pump.fun</span>' :
+                                            '<span class="regular-badge">Other</span>'
+                                        }
+                                    </td>
+                                    <td class="score-cell" data-value="${token.composite_score || 0}">
+                                        <span class="composite-score ${scoreClass}">
+                                            ${token.composite_score > 0 ? '+' : ''}${token.composite_score}
+                                        </span>
+                                    </td>
+                                    <td class="links-cell">
+                                        <a href="${token.solscan_url}" target="_blank">Solscan</a>
+                                        <a href="${token.dexscreener_url}" target="_blank">DexScreener</a>
+                                    </td>
+                                </tr>
+                            `;
+                        }).join('')}
+                    </tbody>
+                </table>
+            `;
+
+            resultsList.innerHTML = tableHTML;
+            updatePagination();
+        }
+
+        function getMomentumEmoji(momentum) {
+            const emojiMap = {
+                'hot': '🔥',
+                'active': '⚡',
+                'moderate': '📈',
+                'low': '📉',
+                'unknown': '❓'
+            };
+            return emojiMap[momentum] || '❓';
+        }
+
+        function getPerformanceClass(score) {
+            if (score >= 5) return 'performance-excellent';
+            if (score >= 2) return 'performance-good';
+            if (score >= -2) return 'performance-average';
+            return 'performance-poor';
+        }
+
+        function getPerformanceLabel(score) {
+            if (score >= 5) return 'EXCELLENT';
+            if (score >= 2) return 'GOOD';
+            if (score >= -2) return 'AVERAGE';
+            return 'POOR';
+        }
+
+        function getRiskClass(riskScore) {
+            if (riskScore <= 2) return 'risk-low';
+            if (riskScore <= 4) return 'risk-medium';
+            if (riskScore <= 6) return 'risk-high';
+            return 'risk-very-high';
+        }
+
+        function getRiskLabel(riskScore) {
+            if (riskScore <= 2) return 'LOW';
+            if (riskScore <= 4) return 'MEDIUM';
+            if (riskScore <= 6) return 'HIGH';
+            return 'DANGER';
+        }
+
+        function sortTable(columnIndex) {
+            if (currentSort.column === columnIndex) {
+                currentSort.direction = currentSort.direction === 'asc' ? 'desc' : 'asc';
+            } else {
+                currentSort.column = columnIndex;
+                currentSort.direction = 'asc';
+            }
+
+            filteredData.sort((a, b) => {
+                let aVal, bVal;
+
+                switch (columnIndex) {
+                    case 0: // Token name
+                        aVal = (a.name || '').toLowerCase();
+                        bVal = (b.name || '').toLowerCase();
+                        break;
+                    case 1: // Market Cap
+                        aVal = a.market_cap || 0;
+                        bVal = b.market_cap || 0;
+                        break;
+                    case 2: // Liquidity
+                        aVal = a.liquidity || 0;
+                        bVal = b.liquidity || 0;
+                        break;
+                    case 3: // Volume 24h
+                        aVal = a.volume24h || 0;
+                        bVal = b.volume24h || 0;
+                        break;
+                    case 4: // Risk Score
+                        aVal = a.risk_score || 0;
+                        bVal = b.risk_score || 0;
+                        break;
+                    case 5: // Platform
+                        aVal = a.is_pump_token ? 1 : 0;
+                        bVal = b.is_pump_token ? 1 : 0;
+                        break;
+                    case 6: // Score
+                        aVal = a.composite_score || 0;
+                        bVal = b.composite_score || 0;
+                        break;
+                    default:
+                        return 0;
+                }
+
+                if (typeof aVal === 'string') {
+                    return currentSort.direction === 'asc' ? aVal.localeCompare(bVal) : bVal.localeCompare(aVal);
+                } else {
+                    return currentSort.direction === 'asc' ? aVal - bVal : bVal - aVal;
+                }
+            });
+
+            currentPage = 1;
+            updateTable();
+        }
+
+        function filterTable() {
+            const searchTerm = document.getElementById('table-search').value.toLowerCase();
+
+            if (!searchTerm) {
+                filteredData = [...currentData];
+            } else {
+                filteredData = currentData.filter(token => {
+                    return (token.name || '').toLowerCase().includes(searchTerm) ||
+                           (token.token_address || '').toLowerCase().includes(searchTerm);
+                });
+            }
+
+            currentPage = 1;
+            updateTable();
+            updateTableInfo();
+        }
+
+        function updateTableInfo() {
+            const visibleCount = document.getElementById('visible-count');
+            const totalCount = document.getElementById('total-count');
+            const avgMarketCap = document.getElementById('avg-market-cap');
+
+            visibleCount.textContent = filteredData.length;
+            totalCount.textContent = currentData.length;
+
+            const totalMarketCap = filteredData.reduce((sum, token) => sum + (token.market_cap || 0), 0);
+            const avgMC = filteredData.length > 0 ? totalMarketCap / filteredData.length : 0;
+            avgMarketCap.textContent = '$' + avgMC.toLocaleString(undefined, { maximumFractionDigits: 0 });
+        }
+
+        function updatePagination() {
+            const pagination = document.getElementById('pagination');
+            const pageInfo = document.getElementById('page-info');
+            const prevBtn = document.getElementById('prev-btn');
+            const nextBtn = document.getElementById('next-btn');
+
+            const totalPages = Math.ceil(filteredData.length / itemsPerPage);
+
+            if (totalPages <= 1) {
+                pagination.style.display = 'none';
+                return;
+            }
+
+            pagination.style.display = 'flex';
+            pageInfo.textContent = `Page ${currentPage} of ${totalPages}`;
+
+            prevBtn.disabled = currentPage === 1;
+            nextBtn.disabled = currentPage === totalPages;
+        }
+
+        function changePage(direction) {
+            const totalPages = Math.ceil(filteredData.length / itemsPerPage);
+
+            if (direction === -1 && currentPage > 1) {
+                currentPage--;
+            } else if (direction === 1 && currentPage < totalPages) {
+                currentPage++;
+            }
+
+            updateTable();
+        }
+
+        function resetFilters() {
+            // Reset all form elements
+            document.querySelectorAll('.filter-input').forEach(input => {
+                if (input.type === 'checkbox') {
+                    input.checked = false;
+                } else {
+                    input.value = '';
+                }
+            });
+
+            // Reset search
+            document.getElementById('table-search').value = '';
+
+            // Clear results
+            document.getElementById('results-list').innerHTML = '<div class="loading">Click "Apply Filters" to start finding tokens...</div>';
+            document.getElementById('results-count').textContent = 'Ready to filter';
+            document.getElementById('pagination').style.display = 'none';
+
+            // Reset table info
+            document.getElementById('visible-count').textContent = '0';
+            document.getElementById('total-count').textContent = '0';
+            document.getElementById('avg-market-cap').textContent = '$0';
+        }
+
+        async function loadRecentTokens() {
+            try {
+                console.log('Loading recent tokens...');
+                const response = await fetch('/api/recent');
+                const data = await response.json();
+                console.log('Received data:', data.count, 'tokens');
+                displayResults(data);
+            } catch (error) {
+                console.error('Failed to load recent tokens:', error);
+                document.getElementById('results-list').innerHTML = '<div class="no-results">❌ Failed to load tokens. Please refresh the page.</div>';
+            }
+        }
+
+        function toggleFilters() {
+            const panel = document.getElementById('filter-panel');
+            const button = document.querySelector('.filter-toggle');
+
+            if (panel.classList.contains('show')) {
+                panel.classList.remove('show');
+                button.textContent = '🔍 Show Filters';
+            } else {
+                panel.classList.add('show');
+                button.textContent = '❌ Hide Filters';
+            }
+        }
+    </script>
+</body>
+</html>
