@@ -1,0 +1,43 @@
+# Environment variables and secrets
+.env
+.env.local
+.env.production
+
+# Database files (contain sensitive token data)
+*.db
+*.db-journal
+*.sqlite
+*.sqlite3
+
+# Logs and temporary files
+*.log
+*.tmp
+.cache/
+temp/
+
+# IDE files
+.vscode/
+.idea/workspace.xml
+.idea/tasks.xml
+.idea/usage.statistics.xml
+.idea/shelf/
+
+# Python cache
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+env/
+venv/
+.venv/
+
+# Personal files
+*wallet*
+private_keys/
+seeds/
+mnemonics/
+
+# OS files
+.DS_Store
+Thumbs.db
