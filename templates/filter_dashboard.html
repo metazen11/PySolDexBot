@@ -429,6 +429,47 @@
             font-size: 0.75em;
             color: #666;
             font-family: monospace;
+            cursor: pointer;
+            padding: 2px 4px;
+            border-radius: 3px;
+            transition: background-color 0.2s;
+        }
+
+        .token-name-cell .token-address:hover {
+            background-color: #f0f0f0;
+            color: #333;
+        }
+
+        .copy-icon {
+            margin-left: 4px;
+            opacity: 0.6;
+            font-size: 0.8em;
+        }
+
+        .price-change-cell {
+            text-align: center;
+            font-weight: 600;
+        }
+
+        .price-change {
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-size: 0.9em;
+        }
+
+        .price-change.positive {
+            color: #10b981;
+            background-color: rgba(16, 185, 129, 0.1);
+        }
+
+        .price-change.negative {
+            color: #ef4444;
+            background-color: rgba(239, 68, 68, 0.1);
+        }
+
+        .price-change.neutral {
+            color: #6b7280;
+            background-color: rgba(107, 114, 128, 0.1);
         }
 
         .number-cell {
@@ -907,12 +948,18 @@
                     <thead>
                         <tr>
                             <th onclick="sortTable(0)" class="sortable ${currentSort.column === 0 ? 'sort-' + currentSort.direction : ''}">Token</th>
-                            <th onclick="sortTable(1)" class="sortable ${currentSort.column === 1 ? 'sort-' + currentSort.direction : ''}">Market Cap</th>
-                            <th onclick="sortTable(2)" class="sortable ${currentSort.column === 2 ? 'sort-' + currentSort.direction : ''}">Liquidity</th>
-                            <th onclick="sortTable(3)" class="sortable ${currentSort.column === 3 ? 'sort-' + currentSort.direction : ''}">Volume 24h</th>
-                            <th onclick="sortTable(4)" class="sortable ${currentSort.column === 4 ? 'sort-' + currentSort.direction : ''}">Risk</th>
-                            <th onclick="sortTable(5)" class="sortable ${currentSort.column === 5 ? 'sort-' + currentSort.direction : ''}">Platform</th>
-                            <th onclick="sortTable(6)" class="sortable ${currentSort.column === 6 ? 'sort-' + currentSort.direction : ''}">Score</th>
+                            <th onclick="sortTable(1)" class="sortable ${currentSort.column === 1 ? 'sort-' + currentSort.direction : ''}">Price</th>
+                            <th onclick="sortTable(2)" class="sortable ${currentSort.column === 2 ? 'sort-' + currentSort.direction : ''}">5m</th>
+                            <th onclick="sortTable(3)" class="sortable ${currentSort.column === 3 ? 'sort-' + currentSort.direction : ''}">1h</th>
+                            <th onclick="sortTable(4)" class="sortable ${currentSort.column === 4 ? 'sort-' + currentSort.direction : ''}">24h</th>
+                            <th onclick="sortTable(5)" class="sortable ${currentSort.column === 5 ? 'sort-' + currentSort.direction : ''}">Market Cap</th>
+                            <th onclick="sortTable(6)" class="sortable ${currentSort.column === 6 ? 'sort-' + currentSort.direction : ''}">Liquidity</th>
+                            <th onclick="sortTable(7)" class="sortable ${currentSort.column === 7 ? 'sort-' + currentSort.direction : ''}">Volume 24h</th>
+                            <th onclick="sortTable(8)" class="sortable ${currentSort.column === 8 ? 'sort-' + currentSort.direction : ''}">Holders</th>
+                            <th onclick="sortTable(9)" class="sortable ${currentSort.column === 9 ? 'sort-' + currentSort.direction : ''}">Growth 24h</th>
+                            <th onclick="sortTable(10)" class="sortable ${currentSort.column === 10 ? 'sort-' + currentSort.direction : ''}">Risk</th>
+                            <th onclick="sortTable(11)" class="sortable ${currentSort.column === 11 ? 'sort-' + currentSort.direction : ''}">Platform</th>
+                            <th onclick="sortTable(12)" class="sortable ${currentSort.column === 12 ? 'sort-' + currentSort.direction : ''}">Score</th>
                             <th>Links</th>
                         </tr>
                     </thead>
@@ -925,11 +972,36 @@
                                 <tr>
                                     <td class="token-name-cell">
                                         <div>${token.name || 'Unknown Token'}</div>
-                                        <div class="token-address">${token.token_address?.substring(0, 8)}...${token.token_address?.substring(-8)}</div>
+                                        <div class="token-address" onclick="copyAddress('${token.token_address}')" title="Click to copy: ${token.token_address}">
+                                            ${token.token_address?.substring(0, 4)}...${token.token_address?.substring(-4)}
+                                            <span class="copy-icon">📋</span>
+                                        </div>
+                                    </td>
+                                    <td class="number-cell" data-value="${token.price_usd || 0}">$${token.price_usd?.toFixed(6) || 'N/A'}</td>
+                                    <td class="price-change-cell" data-value="${token.price_change_5m || 0}">
+                                        <span class="price-change ${getPriceChangeClass(token.price_change_5m)}">
+                                            ${token.price_change_5m ? (token.price_change_5m > 0 ? '+' : '') + token.price_change_5m.toFixed(2) + '%' : 'N/A'}
+                                        </span>
+                                    </td>
+                                    <td class="price-change-cell" data-value="${token.price_change_1h || 0}">
+                                        <span class="price-change ${getPriceChangeClass(token.price_change_1h)}">
+                                            ${token.price_change_1h ? (token.price_change_1h > 0 ? '+' : '') + token.price_change_1h.toFixed(2) + '%' : 'N/A'}
+                                        </span>
+                                    </td>
+                                    <td class="price-change-cell" data-value="${token.price_change_24h || 0}">
+                                        <span class="price-change ${getPriceChangeClass(token.price_change_24h)}">
+                                            ${token.price_change_24h ? (token.price_change_24h > 0 ? '+' : '') + token.price_change_24h.toFixed(2) + '%' : 'N/A'}
+                                        </span>
                                     </td>
                                     <td class="number-cell" data-value="${token.market_cap || 0}">$${token.market_cap?.toLocaleString() || 'N/A'}</td>
                                     <td class="number-cell" data-value="${token.liquidity || 0}">$${token.liquidity?.toLocaleString() || 'N/A'}</td>
                                     <td class="number-cell" data-value="${token.volume24h || 0}">$${token.volume24h?.toLocaleString() || 'N/A'}</td>
+                                    <td class="number-cell" data-value="${token.current_holder_count || 0}">${token.current_holder_count?.toLocaleString() || 'N/A'}</td>
+                                    <td class="price-change-cell" data-value="${token.holder_growth_24h || 0}">
+                                        <span class="price-change ${getPriceChangeClass(token.holder_growth_24h)}">
+                                            ${token.holder_growth_24h ? (token.holder_growth_24h > 0 ? '+' : '') + token.holder_growth_24h.toFixed(1) + '%' : 'N/A'}
+                                        </span>
+                                    </td>
                                     <td class="risk-cell" data-value="${token.risk_score || 0}">
                                         <span class="risk-badge ${getRiskClass(token.risk_score)}">
                                             ${getRiskLabel(token.risk_score)} (${token.risk_score}/10)
@@ -947,8 +1019,8 @@
                                         </span>
                                     </td>
                                     <td class="links-cell">
-                                        <a href="${token.solscan_url}" target="_blank">Solscan</a>
-                                        <a href="${token.dexscreener_url}" target="_blank">DexScreener</a>
+                                        <a href="${token.solscan_url}" target="_blank" rel="noopener noreferrer">Solscan</a>
+                                        <a href="${token.dexscreener_url}" target="_blank" rel="noopener noreferrer">DexScreener</a>
                                     </td>
                                 </tr>
                             `;
@@ -993,6 +1065,11 @@
             return 'risk-very-high';
         }
 
+        function getPriceChangeClass(change) {
+            if (!change || change === 0) return 'neutral';
+            return change > 0 ? 'positive' : 'negative';
+        }
+
         function getRiskLabel(riskScore) {
             if (riskScore <= 2) return 'LOW';
             if (riskScore <= 4) return 'MEDIUM';
@@ -1016,27 +1093,51 @@
                         aVal = (a.name || '').toLowerCase();
                         bVal = (b.name || '').toLowerCase();
                         break;
-                    case 1: // Market Cap
+                    case 1: // Price
+                        aVal = a.price_usd || 0;
+                        bVal = b.price_usd || 0;
+                        break;
+                    case 2: // 5m change
+                        aVal = a.price_change_5m || 0;
+                        bVal = b.price_change_5m || 0;
+                        break;
+                    case 3: // 1h change
+                        aVal = a.price_change_1h || 0;
+                        bVal = b.price_change_1h || 0;
+                        break;
+                    case 4: // 24h change
+                        aVal = a.price_change_24h || 0;
+                        bVal = b.price_change_24h || 0;
+                        break;
+                    case 5: // Market Cap
                         aVal = a.market_cap || 0;
                         bVal = b.market_cap || 0;
                         break;
-                    case 2: // Liquidity
+                    case 6: // Liquidity
                         aVal = a.liquidity || 0;
                         bVal = b.liquidity || 0;
                         break;
-                    case 3: // Volume 24h
+                    case 7: // Volume 24h
                         aVal = a.volume24h || 0;
                         bVal = b.volume24h || 0;
                         break;
-                    case 4: // Risk Score
+                    case 8: // Holders
+                        aVal = a.current_holder_count || 0;
+                        bVal = b.current_holder_count || 0;
+                        break;
+                    case 9: // Growth 24h
+                        aVal = a.holder_growth_24h || 0;
+                        bVal = b.holder_growth_24h || 0;
+                        break;
+                    case 10: // Risk Score
                         aVal = a.risk_score || 0;
                         bVal = b.risk_score || 0;
                         break;
-                    case 5: // Platform
+                    case 11: // Platform
                         aVal = a.is_pump_token ? 1 : 0;
                         bVal = b.is_pump_token ? 1 : 0;
                         break;
-                    case 6: // Score
+                    case 12: // Score
                         aVal = a.composite_score || 0;
                         bVal = b.composite_score || 0;
                         break;
@@ -1165,6 +1266,36 @@
                 panel.classList.add('show');
                 button.textContent = '❌ Hide Filters';
             }
+        }
+
+        // Copy address to clipboard function
+        function copyAddress(address) {
+            navigator.clipboard.writeText(address).then(() => {
+                // Show success feedback
+                const notification = document.createElement('div');
+                notification.textContent = 'Address copied to clipboard!';
+                notification.style.cssText = `
+                    position: fixed;
+                    top: 20px;
+                    right: 20px;
+                    background: #28a745;
+                    color: white;
+                    padding: 10px 20px;
+                    border-radius: 5px;
+                    z-index: 10000;
+                    font-weight: bold;
+                    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+                `;
+                document.body.appendChild(notification);
+
+                setTimeout(() => {
+                    notification.remove();
+                }, 2000);
+            }).catch(err => {
+                console.error('Failed to copy: ', err);
+                // Fallback for older browsers
+                alert('Address: ' + address);
+            });
         }
     </script>
 </body>
